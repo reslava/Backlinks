@@ -1,0 +1,3 @@
+.backlink_button::before {
+	background: url("../images/backlink.png") no-repeat transparent;
+}
