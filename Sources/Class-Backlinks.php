@@ -9,7 +9,7 @@
 * @copyright 2023 reslava
 * @license https://opensource.org/licenses/MIT The MIT License
 *
-* @version 0.40
+* @version 0.41
 */
 
 namespace reslava;
@@ -72,7 +72,7 @@ class Backlinks
 				'backlinks' . $backlink[0] => array(
 				'label' => '',
 				'custom' => 'title="' . $backlink[1] . ' ('. $backlink[2] .')";',
-				'href' => $scripturl . '?msg=' . $backlink[0] . ';',
+				'href' => $scripturl . '?msg=' . $backlink[0],
 				'icon' => 'backlink_button',
 				'show' => true,
 				)
@@ -91,20 +91,25 @@ class Backlinks
 		global $smcFunc;
 
 		$results = $smcFunc['db_query']('', '
-					SELECT * FROM {db_prefix}messages
-					WHERE (body REGEXP ".*msg=?({int:id_msg}(#{int:id_msg})?([^0-9]|$)).*")
+					SELECT id_msg, subject, poster_name FROM {db_prefix}messages
+					WHERE (body REGEXP {string:regex}) 
 					LIMIT 5',
 					array(
-						'id_msg' => $id_msg
-					)
-				);
+						'regex' => $smcFunc['db_quote'](
+							'.*msg=?({int:id_msg}(#{int:id_msg})?([^0-9]|$)).*',
+							array(
+								'id_msg' => $id_msg
+							)
+						)
+					),
+				);				
 
 		if(!$results)
 			return false;
 
 		$backlinks = array();
 		while ($row = $smcFunc['db_fetch_row']($results))
-			$backlinks[] = array($row[0], $row[6], $row[7]);
+			$backlinks[] = array($row[0], $row[1], $row[2]);
 
 		$smcFunc['db_free_result']($results);
 		if(count($backlinks) == 0)
